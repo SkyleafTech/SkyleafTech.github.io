@@ -65,8 +65,8 @@ gitalk:
   clientID: b45d6c42e64ab9b4da85                            #生成的clientID
   clientSecret: 8aed87ea92db09d9d04ac9c6ebc648592162379a    #生成的clientSecret
   repo: SkyleafTech.github.io   #仓库名称
-  owner: vuittonatehsn    #github用户名
-  admin: vuittonatehsn
+  owner: SkyleafTech    #github用户名
+  admin: SkyleafTech
   distractionFreeMode: true #是否启用类似FB的阴影遮罩
 
 
