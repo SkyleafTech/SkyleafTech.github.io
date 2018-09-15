@@ -47,9 +47,9 @@ Hook原理：在每次方法，输出。
 	RAC底调用**bind**， 在开发中很少直接使用 **bind** 方法，**bind**属于RA方法，**bind**用作了解即可.
 
 - **bind方法使用步骤**
-     1. 传入一个返回值 `RACStreamBindBlock` 的 block。
-     2. 描述一个 `RACStreamBindBlock` 类型的 `bindBlock`作为block的返回值。
-     3. 描述一个返回结果的信号，作为 `bindBlock` 的返回值。
+     1. 传入值 `RACStreamBindBlock` 的 block。
+     2. 个 `RACStreamBindBlock` 类型的 `bindBlock`作为block的返回值。
+     3. 描述为 `bindBlock` 的返回值。
      
      注意：在bindBlock中做信号结果的处理。
 - 	**bind方法参数**
@@ -72,39 +72,11 @@ Hook原理：在每次方法，输出。
 		```
 		[_textField.rac_textSignal subscribeNext:^(id x) {
 		
-			// 在返回结果后，拼接 输出：
-			NSLog(@"输出:%@",x);
-		
 		}];
 		```
 
 
-	- 方式二:，使用RAC中 `bind` 方法做处理，在返回结果前，拼接。
-	  
-		这里需要手动导入`#import <SkyleafFirstTest/RACReturnSignal.h>`，才能使用`RACReturnSignal`
 
-		```	
-		[[_textField.rac_textSignal bind:^RACStreamBindBlock{
-		   // 什么时候调用:
-		   // block作用:表示绑定了一个信号.
-		
-		   return ^RACStream *(id value, BOOL *stop){
-		
-		       // 什么时候调用block:当信号有新的值发出，就会来到这个block。
-		
-		       // block作用:做返回值的处理
-		
-		       // 做好处理，在返回结果前，拼接 输出:
-		       return [RACReturnSignal return:[NSString stringWithFormat:@"输出:%@",value]];
-		   };
-		
-		}] subscribeNext:^(id x) {
-		
-		   NSLog(@"%@",x);
-		
-		}];
-
-		```
 
 - **底层实现**
      1. 源信号调用bind,会重新创建一个绑定信号。
@@ -160,34 +132,7 @@ Hook原理：在每次方法，输出。
      3. 调用`bindBlock`，内部就会调用 **flattenMap** 的 bloc k，**flattenMap** 的block作用：就是把处理好的数据包装成信号。
      4. 返回的信号最终会作为 `bindBlock` 中的返回信号，当做 `bindBlock` 的返回信号。
      5. 订阅 `bindBlock` 的返回信号，就会拿到绑定信号的订阅者，把处理完成的信号内容发送出来。
-	
-###### Map
 
-- **作用**
- 
-	把源信号的值映射成一个新的值
-
-	
-- **使用步骤**
-     1. 传入一个block,类型是返回对象，参数是 `value`
-     2. `value`就是源信号的内容，直接拿到源信号的内容做处理
-     3. 把处理好的内容，直接返回就好了，不用包装成信号，返回的值，就是映射的值。
-    
-- **使用**
-
-	监听文本框的内容改变，把结构重新映射成一个新值.
-     
-    ```
-	[[_textField.rac_textSignal map:^id(id value) {
-       
-       // 拼接完后，返回对象
-        return [NSString stringWithFormat:@"信号内容: %@", value];
-        
-    }] subscribeNext:^(id x) {
-        
-        NSLog(@"%@", x);
-    }];
-	```
 - **底层实现**:
      0. Map底层其实是调用 `flatternMa`p,`Map` 中block中的返回的值会作为 `flatternMap` 中block中的值
      1. 当订阅绑定信号，就会生成 `bindBlock` 
@@ -197,297 +142,6 @@ Hook原理：在每次方法，输出。
      5. 返回的信号最终会作为 `bindBlock` 中的返回信号，当做 `bindBlock` 的返回信号
      6. 订阅 `bindBlock` 的返回信号，就会拿到绑定信号的订阅者，把处理完成的信号内容发送出来。
 
-###### FlatternMap 和 Map 的区别
--  **FlatternMap** 中的Block **返回信号**。 
-2. **Map** 中的Block **返回对象**。
-3. 开发中，如果信号发出的值 **不是信号** ，映射一般使用 `Map`
-4. 如果信号发出的值 **是信号**，映射一般使用 `FlatternMap`。
-
-
-
-- `signalOfsignals`用 **FlatternMap**
-
-	```
-    // 创建信号中的信号
-    RACSubject *signalOfsignals = [RACSubject subject];
-    RACSubject *signal = [RACSubject subject];
-
-    [[signalOfsignals flattenMap:^RACStream *(id value) {
-
-     // 当signalOfsignals的signals发出信号才会调用
-
-        return value;
-
-    }] subscribeNext:^(id x) {
-
-        // 只有signalOfsignals的signal发出信号才会调用，因为内部订阅了bindBlock中返回的信号，也就是flattenMap返回的信号。
-        // 也就是flattenMap返回的信号发出内容，才会调用。
-
-        NSLog(@"signalOfsignals：%@",x);
-    }];
-
-    // 信号的信号发送信号
-    [signalOfsignals sendNext:signal];
-
-    // 信号发送内容
-    [signal sendNext:@"hi"];
-	
-	```
-	
-#### 组合
-
-组合就是将多个信号按照某种规则进行拼接，合成新的信号。
-
-###### concat
-
-- **作用** 
-
-	按**顺序拼接**信号，当多个信号发出的时候，有顺序的接收信号。
-- **底层实现**
-     1. 当拼接信号被订阅，就会调用拼接信号的didSubscribe
-     2. didSubscribe中，会先订阅第一个源信号（signalA）
-     3. 会执行第一个源信号（signalA）的didSubscribe
-     4. 第一个源信号（signalA）didSubscribe中发送值，就会调用第一个源信号（signalA）订阅者的nextBlock,通过拼接信号的订阅者把值发送出来.
-     5. 第一个源信号（signalA）didSubscribe中发送完成，就会调用第一个源信号（signalA）订阅者的completedBlock,订阅第二个源信号（signalB）这时候才激活（signalB）。
-     6. 订阅第二个源信号（signalB）,执行第二个源信号（signalB）的didSubscribe
-     7. 第二个源信号（signalA）didSubscribe中发送值,就会通过拼接信号的订阅者把值发送出来.
-- **使用步骤**
-
-	1. 使用`concat:`拼接信号
-	2. 订阅拼接信号，内部会自动按拼接顺序订阅信号
-- **使用**
-
-	拼接信号 `signalA`、 `signalB`、 `signalC`
-	
-	```
-	RACSignal *signalA = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"Hello"];
-        
-        [subscriber sendCompleted];
-        
-        return nil;
-    }];
-    
-    RACSignal *signalB = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"World"];
-        
-        [subscriber sendCompleted];
-        
-        return nil;
-    }];
-    
-    RACSignal *signalC = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"!"];
-        
-        [subscriber sendCompleted];
-        
-        return nil;
-    }];
-    
-    // 拼接 A B, 把signalA拼接到signalB后，signalA发送完成，signalB才会被激活。
-    RACSignal *concatSignalAB = [signalA concat:signalB];
-    
-    // A B + C
-    RACSignal *concatSignalABC = [concatSignalAB concat:signalC];
-    
-    
-    // 订阅拼接的信号, 内部会按顺序订阅 A->B->C
-    // 注意：第一个信号必须发送完成，第二个信号才会被激活...
-    [concatSignalABC subscribeNext:^(id x) {
-        
-        NSLog(@"%@", x);
-    }];
-	```
-
-######  then
-- **作用** 
-
-	用于连接两个信号，当第一个信号完成，才会连接then返回的信号。
-- **底层实现**
-	
-	1. 先过滤掉之前的信号发出的值
-	2. 使用concat连接then返回的信号
-	
-- **使用**
-
-	```
-   [[[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-      
-      [subscriber sendNext:@1];
-      
-      [subscriber sendCompleted];
-      
-      return nil;
-      
-    }] then:^RACSignal *{
-      
-      	return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-          
-          [subscriber sendNext:@2];
-          
-          return nil;
-      }];
-      
-    }] subscribeNext:^(id x) {
-      
-      // 只能接收到第二个信号的值，也就是then返回信号的值
-      NSLog(@"%@", x);
-      
-    }];
-    
-    ///
-    输出：2
-	```
-- **注意**
-
-	注意使用`then`，之前信号的值会被忽略掉.
-
-###### merge
-- **作用** 
-	
-	合并信号,任何一个信号发送数据，都能监听到.
-- **底层实现**
-
-     1. 合并信号被订阅的时候，就会遍历所有信号，并且发出这些信号。
-     2. 每发出一个信号，这个信号就会被订阅
-     3. 也就是合并信号一被订阅，就会订阅里面所有的信号。
-     4. 只要有一个信号被发出就会被监听。
-- **使用**
-
-	```
-	RACSignal *signalA = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"A"];
-        
-        return nil;
-    }];
-
-    RACSignal *signalB = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"B"];
-        
-        return nil;
-    }];
-
-    // 合并信号, 任何一个信号发送数据，都能监听到
-    RACSignal *mergeSianl = [signalA merge:signalB];
-
-    [mergeSianl subscribeNext:^(id x) {
-        
-        NSLog(@"%@", x);
-    }];
-    
-    // 输出
-	2017-01-03 13:29:08.013 SkyleafFirstTest进阶[3627:718315] A
-	2017-01-03 13:29:08.014 SkyleafFirstTest进阶[3627:718315] B
-
-    
-	```
-
-###### zip
-
-- **作用** 
-	
-	把两个信号压缩成一个信号，只有当两个信号 **同时** 发出信号内容时，并且把两个信号的内容合并成一个元组，才会触发压缩流的next事件。
-- **底层实现**
-	
-	1. 定义压缩信号，内部就会自动订阅signalA，signalB
-	2. 每当signalA或者signalB发出信号，就会判断signalA，signalB有没有发出个信号，有就会把每个信号 第一次 发出的值包装成元组发出
-	     
-- **使用**
-
-	```
-	RACSignal *signalA = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"A1"];
-        [subscriber sendNext:@"A2"];
-        
-        return nil;
-    }];
-    
-    RACSignal *signalB = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"B1"];
-        [subscriber sendNext:@"B2"];
-        [subscriber sendNext:@"B3"];
-        
-        return nil;
-    }];
-    
-    RACSignal *zipSignal = [signalA zipWith:signalB];
-    
-    [zipSignal subscribeNext:^(id x) {
-        
-        NSLog(@"%@", x);
-    }];
-	
-	// 输出
-	2017-01-03 13:48:09.234 SkyleafFirstTest进阶[3997:789720] zipWith: <RACTuple: 0x600000004df0> (
-    A1,
-    B1
-	)
-	2017-01-03 13:48:09.234 SkyleafFirstTest进阶[3997:789720] zipWith: <RACTuple: 0x608000003410> (
-    A2,
-    B2
-	)
-	```
-	
-	
-###### combineLatest
-- **作用** 
-	
-	将多个信号合并起来，并且拿到各个信号最后一个值,必须每个合并的signal至少都有过一次sendNext，才会触发合并的信号。
-
-- **底层实现**
-	
- 	1. 当组合信号被订阅，内部会自动订阅signalA，signalB,必须两个信号都发出内容，才会被触发。
- 	2. 并且把两个信号的 最后一次 发送的值组合成元组发出。
-	     
-- **使用**
-
-	```
-	RACSignal *signalA = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"A1"];
-        [subscriber sendNext:@"A2"];
-        
-        return nil;
-    }];
-    
-    RACSignal *signalB = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"B1"];
-        [subscriber sendNext:@"B2"];
-        [subscriber sendNext:@"B3"];
-        
-        return nil;
-    }];
-    
-    RACSignal *combineSianal = [signalA combineLatestWith:signalB];
-    
-    [combineSianal subscribeNext:^(id x) {
-        
-        NSLog(@"combineLatest:%@", x);
-    }];
-	
-	// 输出
-	2017-01-03 13:48:09.235 SkyleafFirstTest进阶[3997:789720] combineLatest:<RACTuple: 0x60800000e150> (
-    A2,
-    B1
-	)
-	2017-01-03 13:48:09.235 SkyleafFirstTest进阶[3997:789720] combineLatest:<RACTuple: 0x600000004db0> (
-    A2,
-    B2
-	)
-	2017-01-03 13:48:09.236 SkyleafFirstTest进阶[3997:789720] combineLatest:<RACTuple: 0x60800000e180> (
-    A2,
-    B3
-	)
-	```
-	
 - **注意**
 
 	**combineLatest**与**zip**用法相似，必须每个合并的signal至少都有过一次sendNext，才会触发合并的信号。
@@ -874,10 +528,7 @@ Hook原理：在每次方法，输出。
         NSLog(@"定时:%@", x);
     }];
     
-	// 输出
-	2017-01-04 13:48:55.196 SkyleafFirstTest进阶[1980:492724] 定时:2017-01-04 05:48:55 +0000
-	2017-01-04 13:48:56.195 SkyleafFirstTest进阶[1980:492724] 定时:2017-01-04 05:48:56 +0000
-	2017-01-04 13:48:57.196 SkyleafFirstTest进阶[1980:492724] 定时:2017-01-04 05:48:57 +0000
+
 	```
 
 
@@ -888,25 +539,7 @@ Hook原理：在每次方法，输出。
 	超时，可以让一个信号在一定的时间后，自动报错。
 	
 	```
-	RACSignal *signal = [[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        // 不发送信号，模拟超时状态
-        // [subscriber sendNext:@"hello"];
-        //[subscriber sendCompleted];
-        
-        return nil;
-    }] timeout:1 onScheduler:[RACScheduler currentScheduler]];// 设置1秒超时
-    
-    [signal subscribeNext:^(id x) {
-        
-        NSLog(@"%@", x);
-    } error:^(NSError *error) {
-        
-        NSLog(@"%@", error);
-    }];
-    
-    // 执行代码 1秒后 输出：
-    2017-01-04 13:48:55.195 SkyleafFirstTest进阶[1980:492724] Error Domain=RACSignalErrorDomain Code=1 "(null)"
+	RACSignal *signal = [[RACSignal createSignal:^RACDisposable 
 	```
 
 ###### delay 延时
@@ -915,17 +548,7 @@ Hook原理：在每次方法，输出。
 	延时，延迟一段时间后发送信号
 	
 	```
-	RACSignal *signal2 = [[[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@"延迟输出"];
-        
-        return nil;
-    }] delay:2] subscribeNext:^(id x) {
-        
-        NSLog(@"%@", x);
-    }];
-    
-    // 执行代码 2秒后 输出
+	RACSignal *signal2 = [[[RACSignal createSignal:^RACDisposable 
     2017-01-04 13:55:23.751 SkyleafFirstTest进阶[2030:525038] 延迟输出
 	```
 
@@ -939,74 +562,20 @@ Hook原理：在每次方法，输出。
 	重试：只要 发送错误 `sendError:`,就会 重新执行 创建信号的Block 直到成功
 	
 	```
-	__block int i = 0;
-    
-    [[[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        if (i == 5) {
-            
-            [subscriber sendNext:@"Hello"];
-            
-        } else {
-            
-            // 发送错误
-            NSLog(@"收到错误:%d", i);
-            [subscriber sendError:nil];
-        }
-        
-        i++;
-        
-        return nil;
-        
-    }] retry] subscribeNext:^(id x) {
-        
-        NSLog(@"%@", x);
-        
-    } error:^(NSError *error) {
-        
-        NSLog(@"%@", error);
-        
-    }];
-
-	// 输出
-2017-01-04 14:36:51.594 SkyleafFirstTest进阶[2443:667226] 收到错误信息:0
-2017-01-04 14:36:51.595 SkyleafFirstTest进阶[2443:667226] 收到错误信息:1
-2017-01-04 14:36:51.595 SkyleafFirstTest进阶[2443:667226] 收到错误信息:2
-2017-01-04 14:36:51.596 SkyleafFirstTest进阶[2443:667226] 收到错误信息:3
-2017-01-04 14:36:51.596 SkyleafFirstTest进阶[2443:667226] 收到错误信息:4
-2017-01-04 14:36:51.596 SkyleafFirstTest进阶[2443:667226] Hello
+	
 
 	```
-
 ###### replay
 
 - **作用**
 
 	重放：当一个信号被多次订阅,反复播放内容
 	
-	```
-	RACSignal *signal = [[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        
-        [subscriber sendNext:@1];
-        [subscriber sendNext:@2];
-        
-        return nil;
-    }] replay];
+
+
     
-    [signal subscribeNext:^(id x) {
-        NSLog(@"%@", x);
-    }];
-    
-    [signal subscribeNext:^(id x) {
-        NSLog(@"%@", x);
-    }];
-    
-    // 输出
-2017-01-04 14:51:01.934 SkyleafFirstTest进阶[2544:706740] 1
-2017-01-04 14:51:01.934 SkyleafFirstTest进阶[2544:706740] 2
-2017-01-04 14:51:01.934 SkyleafFirstTest进阶[2544:706740] 1
-2017-01-04 14:51:01.935 SkyleafFirstTest进阶[2544:706740] 2
-	```
+
+
 
 
 ###### throttle
@@ -1016,17 +585,7 @@ Hook原理：在每次方法，输出。
 	节流:当某个信号发送比较频繁时，可以使用节流，在某一段时间不发送信号内容，过了一段时间获取信号的最新内容发出。
 	
 	```
-	RACSubject *subject = [RACSubject subject];
-    
-    // 节流1秒，1秒后接收最后一个发送的信号
-    [[subject throttle:1] subscribeNext:^(id x) {
-        
-        NSLog(@"%@", x);
-    }];
-    
-    [subject sendNext:@1];
-    [subject sendNext:@2];
-    [subject sendNext:@3];
+	RACSubject *subject = [RACSubject subject];endNext:@3];
     
     // 输出
     2017-01-04 15:02:37.543 SkyleafFirstTest进阶[2731:758193] 3
@@ -1038,27 +597,18 @@ Hook原理：在每次方法，输出。
 
 #### 常见的架构
 - **MVC**
-
 	M:模型 V:视图 C:控制器
-
 - **MVVM**
-
 	M:模型 V:视图+控制器 VM:视图模型
-
 - **MVCS**
-
 	 M:模型 V:视图 C:控制器 C:服务类
-
 - [**VIPER**](http://www.cocoachina.com/ios/20140703/9016.html)
-
 	V:视图 I:交互器 P:展示器 E:实体 R:路由
 
 #### MVVM介绍
 
 - 模型(M):保存视图数据。
-
 - 视图+控制器(V):展示内容 + 如何展示
-
 - 视图模型(VM):处理展示的业务逻辑，包括按钮的点击，数据的请求和解析等等。
 
 # 实战一：登录界面
@@ -1076,14 +626,8 @@ Hook原理：在每次方法，输出。
 1. 创建LoginViewModel类，处理登录界面业务逻辑.
 2. 这个类里面应该保存着账号的信息，创建一个账号Account模型
 3. LoginViewModel应该保存着账号信息Account模型。
-4. 需要时刻监听Account模型中的账号和密码的改变，怎么监听？
-5. 在非RAC开发中，都是习惯赋值，在RAC开发中，需要改变开发思维，由赋值转变为绑定，可以在一开始初始化的时候，就给Account模型中的属性绑定，并不需要重写set方法。
-6. 每次Account模型的值改变，就需要判断按钮能否点击，在VM模型中做处理，给外界提供一个能否点击按钮的信号.
-7. 这个登录信号需要判断Account中账号和密码是否有值，用KVO监听这两个值的改变，把他们聚合成登录信号.
-8. 监听按钮的点击，由VM处理，应该给VM声明一个RACCommand，专门处理登录业务逻辑.
-9. 执行命令，把数据包装成信号传递出去
-10. 监听命令中信号的数据传递
-11. 监听命令的执行时刻
+
+
 
 
 
@@ -1097,67 +641,7 @@ Hook原理：在每次方法，输出。
 
 ```
 #import "MyViewController.h"
-#import "LoginViewModel.h"
 
-@interface MyViewController ()
-
-@property (nonatomic, strong) LoginViewModel *loginViewModel;
-
-@property (weak, nonatomic) IBOutlet UITextField *accountField;
-
-@property (weak, nonatomic) IBOutlet UITextField *pwdField;
-
-@property (weak, nonatomic) IBOutlet UIButton *loginBtn;
-
-@end
-
-@implementation MyViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
-    [self bindModel];
-    
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
-
-
-// 视图模型绑定
-- (void)bindModel {
-
-    // 给模型的属性绑定信号
-    //
-    RAC(self.loginViewModel.account, account) = _accountField.rac_textSignal;
-    RAC(self.loginViewModel.account, pwd) = _pwdField.rac_textSignal;
-    
-    RAC(self.loginBtn, enabled) = self.loginViewModel.enableLoginSignal;
-    
-    // 监听登录点击
-    [[_loginBtn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(id x) {
-        
-        [self.loginViewModel.LoginCommand execute:nil];
-    }];
-    
-}
-- (IBAction)btnTap:(id)sender {
-    
-    
-}
-
-#pragma mark - lazyLoad
-
-- (LoginViewModel *)loginViewModel {
-    
-    if (nil == _loginViewModel) {
-        _loginViewModel = [[LoginViewModel alloc] init];
-    }
-    
-    return _loginViewModel;
 }
 ```	
 		
@@ -1166,137 +650,30 @@ Hook原理：在每次方法，输出。
 ```
 #import <UIKit/UIKit.h>
 
-@interface Account : NSObject
-
-@property (nonatomic, strong) NSString *account;
-@property (nonatomic, strong) NSString *pwd;
-
-@end
-
-
-@interface LoginViewModel : UIViewController
-
-@property (nonatomic, strong) Account *account;
-
-// 是否允许登录的信号
-@property (nonatomic, strong, readonly) RACSignal *enableLoginSignal;
-
-@property (nonatomic, strong, readonly) RACCommand *LoginCommand;
+@interfaceoginCommand;
 
 @end
 
 ```
 
-`LoginViewModel.m`
 
-```
-#import "LoginViewModel.h"
-
-@implementation Account
-
-@end
-
-
-@interface LoginViewModel ()
-
-@end
-
-@implementation LoginViewModel
-
-- (instancetype)init {
-    
-    if (self = [super init]) {
-        [self initialBind];
-    }
-    return self;
-}
-
-- (void)initialBind {
-
-    // 监听账号属性改变， 把他们合成一个信号
-    _enableLoginSignal = [RACSubject combineLatest:@[RACObserve(self.account, account), RACObserve(self.account, pwd)] reduce:^id(NSString *accout, NSString *pwd){
-        
-        return @(accout.length && pwd.length);
-    }];
-    
-    // 处理业务逻辑
-    _LoginCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
-        
-        NSLog(@"点击了登录");
-        return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-            
-            // 模仿网络延迟
-
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                
-                // 返回登录成功 发送成功信号
-                [subscriber sendNext:@"登录成功"];
-            });
-            
-            return nil;
-        }];
-    }];
-    
-    
-    // 监听登录产生的数据
-    [_LoginCommand.executionSignals.switchToLatest subscribeNext:^(id x) {
-       
-        if ([x isEqualToString:@"登录成功"]) {
-            NSLog(@"登录成功");
-        }
-        
-    }];
-    
-    [[_LoginCommand.executing skip:1] subscribeNext:^(id x) {
-        
-        if ([x isEqualToNumber:@(YES)]) {
-            
-            NSLog(@"正在登陆...");
-        } else {
-            
-        // 登录成功
-        NSLog(@"登陆成功");
-        
-        }
-        
-    }];
-}
-
-#pragma mark - lazyLoad
-
-- (Account *)account
-{
-    if (_account == nil) {
-        _account = [[Account alloc] init];
-    }
-    return _account;
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
-}
-
-@end
-
-```
 
 # 实战二：网络请求数据
 
 #### 需求
-1. 请求一段网络数据，将请求到的数据在`tableView`上展示
-2. 该数据为豆瓣图书的搜索返回结果，URL：url:https://api.douban.com/v2/book/search?q=悟空传
+1. 请求一段网数据在`tableView`上展示
+2. 该数结果，URL：url:https://api.douban.com/v2/book/search?q=悟空传
 
 #### 分析
-1. 界面的所有业务逻辑都交给**控制器**做处理
-2. 网络请求交给**MV**模型处理
+1. 界面的所都交给**控制器**做处理
+2. 网给**MV**模型处理
 
 #### 步骤
 
-1. 控制器提供一个视图模型（requesViewModel），处理界面的业务逻辑
-2. VM提供一个命令，处理请求业务逻辑
-3. 在创建命令的block中，会把请求包装成一个信号，等请求成功的时候，就会把数据传递出去。
-4. 请求数据成功，应该把字典转换成模型，保存到视图模型中，控制器想用就直接从视图模型中获取。
+1. 控制器提供一个视图模型（requesViewModel），处理务逻辑
+2. VM提供求业务逻辑
+3. 在创建据传递出去。
+4. 请求数直接从视图模型中获取。
 
 #### 其他
 
@@ -1305,13 +682,7 @@ Hook原理：在每次方法，输出。
 ```
 platform :ios, '8.0'
 
-target 'SkyleafFirstTest进阶' do
-
-use_frameworks!
-pod 'SkyleafFirstTest', '~> 2.5'
-pod 'AFNetworking'
-pod 'SDWebImage'
-end
+ta
 ```
 
 #### 运行效果
@@ -1325,193 +696,21 @@ end
 
 ```
 #import "SearchViewController.h"
-#import "RequestViewModel.h"
-
-@interface SearchViewController ()<UITableViewDataSource>
-
-@property (nonatomic, strong) UITableView *tableView;
-
-@property (nonatomic, strong) RequestViewModel *requesViewModel;
-
-@end
-
-@implementation SearchViewController
-
-- (RequestViewModel *)requesViewModel
-{
-    if (_requesViewModel == nil) {
-        _requesViewModel = [[RequestViewModel alloc] init];
-    }
-    return _requesViewModel;
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
-    
-    self.tableView = [[UITableView alloc] initWithFrame:self.view.frame];
-    
-    self.tableView.dataSource = self;
-    
-    [self.view addSubview:self.tableView];
-    
-    //
-    RACSignal *requesSiganl = [self.requesViewModel.reuqesCommand execute:nil];
-    
-    [requesSiganl subscribeNext:^(NSArray *x) {
-        
-        self.requesViewModel.models = x;
-        
-        [self.tableView reloadData];
-    }];
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return self.requesViewModel.models.count;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    static NSString *ID = @"cell";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
-    if (cell == nil) {
-        
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:ID];
-    }
-    
-    Book *book = self.requesViewModel.models[indexPath.row];
-    cell.detailTextLabel.text = book.subtitle;
-    cell.textLabel.text = book.title;
-    
-    [cell.imageView sd_setImageWithURL:[NSURL URLWithString:book.image] placeholderImage:[UIImage imageNamed:@"cellImage"]];
-    
-    
-    return cell;
-}
+#import 
 @end
 ```
 
 `RequestViewModel.h`
 
 ```
-#import <Foundation/Foundation.h>
-
-@interface Book : NSObject
-
-@property (nonatomic, copy) NSString *subtitle;
-@property (nonatomic, copy) NSString *title;
-@property (nonatomic, copy) NSString *image;
-
-@end
-
-@interface RequestViewModel : NSObject
-
-// 请求命令
-@property (nonatomic, strong, readonly) RACCommand *reuqesCommand;
-
-//模型数组
-@property (nonatomic, strong) NSArray *models;
-
-
+#impor
 @end
 ```
 
 `RequestViewModel.m`
 
 ```
-#import "RequestViewModel.h"
-
-@implementation Book
-
-- (instancetype)initWithValue:(NSDictionary *)value {
-    
-    if (self = [super init]) {
-        
-        self.title = value[@"title"];
-        self.subtitle = value[@"subtitle"];
-        self.image = value[@"image"];
-    }
-    return self;
-}
-
-+ (Book *)bookWithDict:(NSDictionary *)value {
-    
-    return [[self alloc] initWithValue:value];
-}
-
-
-
-@end
-
-@implementation RequestViewModel
-
-- (instancetype)init
-{
-    if (self = [super init]) {
-        
-        [self initialBind];
-    }
-    return self;
-}
-
-
-- (void)initialBind
-{
-    _reuqesCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
-        
-      RACSignal *requestSiganl = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-          
-          NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-          parameters[@"q"] = @"悟空传";
-          
-          //
-          [[AFHTTPSessionManager manager] GET:@"https://api.douban.com/v2/book/search" parameters:parameters progress:^(NSProgress * _Nonnull downloadProgress) {
-              
-              NSLog(@"downloadProgress: %@", downloadProgress);
-          } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-              
-              // 数据请求成功就讲数据发送出去
-              NSLog(@"responseObject:%@", responseObject);
-              
-              [subscriber sendNext:responseObject];
-              
-              [subscriber sendCompleted];
-              
-          } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-              
-              NSLog(@"error: %@", error);
-          }];
-          
-          
-         return nil;
-      }];
-        
-        // 在返回数据信号时，把数据中的字典映射成模型信号，传递出去
-        return [requestSiganl map:^id(NSDictionary *value) {
-            
-            NSMutableArray *dictArr = value[@"books"];
-            
-            NSArray *modelArr = [[dictArr.rac_sequence map:^id(id value) {
-                
-                return [Book bookWithDict:value];
-                
-            }] array];
-            
-            return modelArr;
-            
-        }];
-        
-    }];
-}
-
-
-@end
+#impo
 
 ```
 
