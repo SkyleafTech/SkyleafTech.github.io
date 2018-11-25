@@ -386,8 +386,6 @@ Hook原理：在每次方法，输出。
 
 ```
 
-
-
 # 实战二：网络请求数据
 
 #### 需求
@@ -445,3 +443,6 @@ ta
 ```
 
 >最后附上GitHub：<https://github.com/qiubaiying/SkyleafFirstTest_Demo>
+
+1. [**圖片轉換成base64**](http://tool.chinaz.com/tools/imgtobase)
+2. [**Markdown遷入圖檔**](https://www.jxtxzzw.com/archives/1700)
