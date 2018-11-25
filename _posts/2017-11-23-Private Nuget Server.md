@@ -61,8 +61,8 @@ tags:
 
 6. 還可以使用unpkg檔案建立package的內容，icon等等。但有了NPE後對一般使用者來說比較直覺一點，這就看你自己了，這跟publish你可以使用[**Nuget.exe**](https://www.nuget.org/downloads) Publish一樣。都可以。
 
-![alt][img1]
-![alt][img2]
+ - ![alt][img1]
+ - ![alt][img2]
 
 7. 接著建立新的測試專案，去Nuget Manager加入新的Nuget Server位置
 
