@@ -26,7 +26,7 @@ tags:
 1. Windows 10 (Version 2.0.0.0-win81 (29211))
 2. Windows Contain CE (Version 2.0.0.0-win81 (29211))
 3. Cmder (Powershell)
-4. 
+
 
 #### 操作想法
 
@@ -34,7 +34,7 @@ tags:
 
 主要流程是我本機MVC專案裡的程式碼改好後。透過Dockerfile去觸發建置，建置好後的dll再丟到另一個container內做deploy到IIS的動作，整體的流程只需要一個dockerfile。有興趣的朋友可以參考參考，不得不說目前Windows Container的雷真多。
 
-#### 操作方法
+#### 操作工具
 
 1. Docker
 2. Dockerfile
@@ -51,7 +51,7 @@ tags:
     a. 針對csproj檔案來依序建置
 
     ```
-
+    之後補上
     ```	
     b. 先使用nuget restore
     c. build的過程需要再丟其他檔案(頁面的)
@@ -59,33 +59,43 @@ tags:
 
     ```	
     d. 在逐一建置專案
+    ```
 
+    ```	
     e. 接著準備Deploy環境
+    ```
 
+    ```	
     f. 接著要把IIS的32bit給打開，因為Oracle是使用32bit的，有兩種方式cmd或是powershell
+    ```
 
+    ```	
     g. 重點是這: 使用上一個From image container抓出剛剛build好的檔案，沒錯你必須先命名
+    ```
 
+    ```	
     h. 再來是使用Bruce提供的HealthCheck方法去確保IIS都是ON的
+    ```
 
+    ```	
 
 4. 雷:
-- 最後想說不自己動手做真的不知道哪裡有錯，尤其是前面我打算用volume的部分，很多斜線阿，雙引號阿，D槽吃不到啊。
+- 最後想說不自己動手做真的不知道哪裡有錯，尤其是前面我打算用volume的部分，很多斜線阿，雙引號阿，D槽吃不到啊，等等的問題。
 - 版本最好先確認，1709跟1803兩個的版本是有很多差距的(建議用新的)
 - Multi Stage用法，不使用這個會需要多好幾部動作
-- 專案只丟需要的，跟建立.dockerignore檔案
+- 專案只丟需要的。建立.dockerignore檔案
 - 逐步msbuild 專案
 - Cmd或Powershell修改IIS方式
 - 使用HealthCheck檢測Application是否正常(有可能container正常，但IIS掛)
 
 5. Source: 
-- 專案有Oracle安裝Docker deploy IIS 教學 
-- 另一篇教學安裝，dockerfile deploy IIS (ServerCore)
-- 安裝教學，Github，修改IIS 32 bit
+- [專案有Oracle安裝Docker deploy IIS 教學](http://www.codesin.net/post/Oracle_ODAC/) 
+- 另一篇[教學](https://www.red-gate.com/simple-talk/sysadmin/virtualization/working-windows-containers-docker-running/)安裝，dockerfile deploy IIS (ServerCore)
+- 安裝[教學](http://stevenfollis.com/2017/10/05/access-database-windows-container/)，修改IIS 32 bit
 
 #### 結論
 
-- 本篇用意在於初步認識Windows Container，但我想只是認識他好像沒啥用處，過一正子又會忘了，所以要能符合目前有用到的流程，總得加點什麼上去，所以才選擇網站佈版的流程，做個簡易CICD。不過目前還是建議先用在開發階段或是使用在POC或是Demo 其他專案做快速佈版用。這樣好處是可以乾淨一點，可以把這些範例專案放到dockerHub上。需要的時候在拉下來，NGINX，Redis，ELK，RabbiMQ等等的服務也可以這樣做，需要再拉就好。
+- 本篇用意在於初步認識Windows Container，但我想只是認識他好像沒啥用處，過一正子又會忘了，所以要能符合目前有用到的流程，總得加點什麼上去，所以才選擇網站佈版的流程，做個簡易CICD。不過目前還是建議先用在開發階段或是使用在POC或是Demo等其他專案做快速佈版用。這樣好處是可以乾淨一點，可以把這些範例專案放到dockerHub上。需要的時候在拉下來，NGINX，Redis，ELK，RabbiMQ等等的服務也可以這樣做，需要再拉就好。
 
 ```
 
