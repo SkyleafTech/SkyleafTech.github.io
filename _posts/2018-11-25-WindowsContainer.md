@@ -48,34 +48,57 @@ tags:
 1. 使用dotnet-framework:4.7.2-sdk-windowsservercore-1803版本
 2. 透過multi stage技巧，所以只需要一個Dockerfile完成build跟deploy
 3. 目的是要build WebApi專案，所以沒丟test專案
+    ```
+    FROM microsoft/dotnet-framework:4.7.2-sdk-windowsservercore-1803 AS build
+    WORKDIR /app
+    ```
     a. 針對csproj檔案來依序建置
 
     ```
-    之後補上
+    COPY *.sln .
+    COPY WebAPI/*.csproj ./WebAPI/
+    COPY WebAPI/*.config ./WebAPI/
+    COPY Domain.DataClass/*.csproj ./Domain.DataClass/
+    COPY Common.Utility/*.csproj ./Common.Utility//
+    COPY Common.Utility/*.config ./Common.Utility/
+    RUN nuget restore
     ```	
     b. 先使用nuget restore
+    
     c. build的過程需要再丟其他檔案(頁面的)
     ```
-
+    COPY WebAPI/. ./WebAPI/
+    COPY Domain.DataClass/. ./Domain.DataClass/
+    COPY Common.Utility/. ./Common.Utility/
     ```	
     d. 在逐一建置專案
     ```
-
+    RUN msbuild /p:Configuration=Release ./Domain.DataClass
+    RUN msbuild /p:Configuration=Release ./Common.Utility
+    RUN msbuild /p:Configuration=Release ./WebAPI/
     ```	
     e. 接著準備Deploy環境
     ```
-
+    FROM microsoft/aspnet:4.7.2-windowsservercore-1803 AS runtime
     ```	
     f. 接著要把IIS的32bit給打開，因為Oracle是使用32bit的，有兩種方式cmd或是powershell
     ```
+     RUN C:\Windows\System32\inetsrv\appcmd set apppool /apppool.name:DefaultAppPool /enable32bitapponwin64:true;  
 
     ```	
     g. 重點是這: 使用上一個From image container抓出剛剛build好的檔案，沒錯你必須先命名
     ```
-
+    COPY --from=build /app/WebAPI/. ./inetpub/wwwroot
     ```	
-    h. 再來是使用Bruce提供的HealthCheck方法去確保IIS都是ON的
+    h. 再來是使用[Bruce](https://blog.kkbruce.net/)提供的HealthCheck方法去確保IIS都是ON的
     ```
+    HEALTHCHECK --interval=30s `
+    CMD powershell -command `
+        try { `
+        $response = iwr http://localhost/diagnostics -UseBasicParsing; `
+        if ($response.StatusCode -eq 200) { return 0} `
+        else {return 1}; `
+        } catch { return 1 }
 
     ```	
 
