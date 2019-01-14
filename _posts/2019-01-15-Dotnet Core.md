@@ -49,18 +49,19 @@ tags:
 - Content Root:整個專案的最上層就是Content Root
 - Web Root: 就是放靜態檔案的，因為以前我們Deploy只能放到IIS目錄，但是現在要在任何folder位置都可以跑。所以他被整理出來跟著專案。
 - .Net Standard Library 統一
+
 #### Web專案選項:
 - MVC: 這個包含的項目最多
 - WebAPI: 這個沒有View這層
 - Razor Page: 這個沒有Controller層，而且他有點像是以前的codebehind結構，他也沒有Router機制，他是跟以前一樣用檔案對應方式
 
-Fundamental: 講師認為這次改最大的就是底層核心架構，以往以前都包好了，現在全部開放可以抽換修改設定。
-- 例如: Logger。在ASP.NET MVC是沒有的，都是用第三方套件Log4Net等等的，現在.Net Core已經有內建了
+    Fundamental: 講師認為這次改最大的就是底層核心架構，以往以前都包好了，現在全部開放可以抽換修改設定。
+    - 例如: Logger。在ASP.NET MVC是沒有的，都是用第三方套件Log4Net等等的，現在.Net Core已經有內建了
 
-有好多個，這邊先列有紀錄的
-- Environment: 可區分Dev，Stage，Prod
-- 透過launchSetting.json檔案設定Host專用的參數，例如port位置
-- 透過AppSetting.json檔案設定App會使用的變數，例如ConnectionString
+    有好多個，這邊先列有紀錄的
+    - Environment: 可區分Dev，Stage，Prod
+    - 透過launchSetting.json檔案設定Host專用的參數，例如port位置
+    - 透過AppSetting.json檔案設定App會使用的變數，例如ConnectionString
 
 #### WebHost:
 - 有兩種Type: 
@@ -88,7 +89,7 @@ Fundamental: 講師認為這次改最大的就是底層核心架構，以往以�
 
 #### Unit Test
 - 就是要開始寫Interface
-- 寫Interface也才可以做Unit Test。遇到注入的可以才可以透過interface使用- Mock，而Stubing可以用在Repository Pattern上
+- 寫Interface也才可以做Unit Test。遇到注入的才可以透過interface使用- Mock，而Stubing可以用在Repository Pattern上
 - Unit Testing有幾件事做不到:
   - Performance效能證明
   - 沒有深層Test證明，只有被測到的參數範圍可確定
@@ -109,12 +110,12 @@ Fundamental: 講師認為這次改最大的就是底層核心架構，以往以�
 
 - 講師建議: .Net Core 2.0 不考慮，直接使用 .Net 2.1或是2.2。但2.2支援的太新，怕你要Migrate的專案內容版本會不相容
 
-MVC 5 migrate .Net Core 2.1 差異
+#### MVC 5 migrate .Net Core 2.1 差異
 - 新的 .Net Core他們把牠放到/wwwroot/內
 - .Net Framework頁面的Html Helper被移除了，他的缺點就是要到Runtime Render才會知道。.Net Core採用Tag Helper (不知道是否Compile就可知道錯誤)。
 - Bundle跟Minify移除了，原本坐在Server Side，改用CDN載入Script
 
-DI Demo:
+#### DI Demo:
 - View也可以做DI，只是講師建議思考思考看看，透過@inject Ixxx xxx 做注入
 Action 也可以DI需要加上[FromServices]即可
 - 只要有使用DI，優點是它會自動幫你處理好Dispose()
