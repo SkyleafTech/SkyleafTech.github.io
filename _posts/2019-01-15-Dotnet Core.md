@@ -15,7 +15,7 @@ tags:
 
 > 這篇稍微紀錄一下這兩次參加的研討
 
-![图](https://images.unsplash.com/photo-1520509414578-d9cbf09933a1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=649&q=80)
+![图](https://images.unsplash.com/photo-1520509414578-d9cbf09933a1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80)
 
 ## Agenda
 
@@ -26,7 +26,7 @@ tags:
 
 - 這兩次是由聖殿祭司(奚江華老師)跟董大維老師兩位主辦，第一次的研討董老師生病，聖殿祭司一間扛起整個下午，個人覺得超屌，果然是有實力有準備。內容帶到很多.Net Framework MVC 跟目前.Net Core的差異。需要注意什麼跟基本的Demo。第二天董老師講的是LineBot的一些新功能。但不得不說奚老師還請喝飲料，真是佛心。他覺得週末肯出來聽聽研討，輕鬆一下。
 
--時間: 2018-12-02 跟 2019-01-14兩場
+- 時間: 2018-12-02 跟 2019-01-14兩場
 
 # 聖殿祭司.Net Core內容
  
@@ -36,20 +36,20 @@ tags:
 3. DI
 4. Middleware
 
-#####  名稱很容易搞混:
+####  名稱很容易搞混:
 - .Net Core 對應 .Net Framework
 - ASP.NET Core 對應 ASP.NET Framework
 - ASP.NET Core MVC 對應 ASP.NET MVC
 
-##### 安裝:
+#### 安裝:
 - 基本上有三種的樣子，我使用VS 2017需安裝 .Net Core SDK 就對了，他全包
 - 透過CLI 命令做建置，或是使用VS2017 (直接包在裡面了)
 
-##### 專案架構:
+#### 專案架構:
 - Content Root:整個專案的最上層就是Content Root
 - Web Root: 就是放靜態檔案的，因為以前我們Deploy只能放到IIS目錄，但是現在要在任何folder位置都可以跑。所以他被整理出來跟著專案。
 - .Net Standard Library 統一
-##### Web專案選項:
+#### Web專案選項:
 - MVC: 這個包含的項目最多
 - WebAPI: 這個沒有View這層
 - Razor Page: 這個沒有Controller層，而且他有點像是以前的codebehind結構，他也沒有Router機制，他是跟以前一樣用檔案對應方式
@@ -62,7 +62,7 @@ Fundamental: 講師認為這次改最大的就是底層核心架構，以往以�
 - 透過launchSetting.json檔案設定Host專用的參數，例如port位置
 - 透過AppSetting.json檔案設定App會使用的變數，例如ConnectionString
 
-##### WebHost:
+#### WebHost:
 - 有兩種Type: 
   - WebHost: 建議使用，跟Web App有關的都在這
   - GenericHost: 不是Web App的，講師說未來可能會使用
@@ -81,12 +81,12 @@ Fundamental: 講師認為這次改最大的就是底層核心架構，以往以�
 
 - IApplicationLifetime可以區分另外3個動作，分辨可在這三個順序動作做想要做的事。EX: xxxed，xxxing，還有一個沒記到
 
-##### Configuration:
+#### Configuration:
   - 在使用CLI下command的參數，他就是帶到program的main的args內。所以command帶的參數可以複寫你原本設定的參數。EX: port的位置
   - 兩種載入configuration方式: Webhost跟configurationBuilder
   - 載入後會被存在記憶體內，會變成key value格式，注意key可以重複，可是最後一筆會覆蓋掉前面的key值，可且還可以設定ReloadUnchange=true我猜可以runtime修改它
 
-##### Unit Test
+#### Unit Test
 - 就是要開始寫Interface
 - 寫Interface也才可以做Unit Test。遇到注入的可以才可以透過interface使用- Mock，而Stubing可以用在Repository Pattern上
 - Unit Testing有幾件事做不到:
@@ -94,7 +94,7 @@ Fundamental: 講師認為這次改最大的就是底層核心架構，以往以�
   - 沒有深層Test證明，只有被測到的參數範圍可確定
   - 沒有壓測證明
 
-##### Dependency:
+#### Dependency:
 - VIEW也可以使用Inject 物件，就可以使用該Interface定義好的Properties，對我一直很少用Interface使用properties
 - DI的Instance生命建構
   - Tranient: 整個Request的Lifetime有用到3次該物件就會new 3次
@@ -162,7 +162,7 @@ Action 也可以DI需要加上[FromServices]即可
 1. 老師的相關課程[**ASP.NET Core MVC2.2 課程**](https://www.codemagic.com.tw/)
 
 
-#### 來源
+## 來源
 
 1. [**ASP.NET Core 2.1設計新思維與新發展**](https://www.slideshare.net/dotnetcool/aspnet-core-21-125035257?fbclid=IwAR0ELuJgACmnnUOCegSMeTGRqUVdrLJP6NEuwHU8hmr5Rz7SCWLNmocP364)
 2. [**ASP.NET Core 從陌生到熟悉 Part II**](https://www.slideshare.net/dotnetcool/aspnet-core-mvc-22)
