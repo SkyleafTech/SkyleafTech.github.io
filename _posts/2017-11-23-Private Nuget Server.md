@@ -15,7 +15,7 @@ tags:
 > Private Nuget Server。
 
 ![图](https://images.unsplash.com/photo-1512908593802-fc940f380825?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=0f62467b0ddc485a091cce9f93f48ae3&auto=format&fit=crop&w=1950&q=80)
-# 一般狀況介紹有兩種
+# Nuget Server 一般狀況介紹有兩種
 
 - NuGet Gallery (Public)
 - NuGet Server (Private)
@@ -27,7 +27,7 @@ tags:
 3. 寫.Net Library
 4. 封裝
 5. 專案方法隔離
-10. 有效控管工具
+6.  有效控管工具
 
 
 #### 操作想法
