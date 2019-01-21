@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Dotnet Core
+title:      Dotnet Core 論壇
 subtitle:   Dotnet Core 初探
 date:       2019-01-15
 author:     BY Skyleaf
@@ -10,6 +10,7 @@ tags:
     - Dotnet Core
     - LineBot
     - .NET Core 
+    - 論壇
 ---
 # 前言
 
@@ -121,7 +122,7 @@ Action 也可以DI需要加上[FromServices]即可
 - 只要有使用DI，優點是它會自動幫你處理好Dispose()
 
 
-## LineBot
+# LineBot
 
 範例: [小P記帳APP](https://github.com/isdaviddong/Linebot-Demo-AccountBook)，[人臉辨識](https://github.com/isdaviddong/Linebot-Demo-FaceRecognition)。
 
