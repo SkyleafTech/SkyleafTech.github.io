@@ -57,7 +57,7 @@ tags:
 - Shared資料夾內多半放置可共用的Domain，例如Currency。另外Address只有在Customer，我猜是因為Order內是指定Customer，但如果我是購買人，送件地址不同呢? 我就需要多建立一個Receiver了，這樣依樣不需要拉出address。
 - 參考: 無
 - Repository資料夾，裡面是所有Repository的interface
-- IAggregatedRoot類一定要建立，每個Domain的Aggregate Root會繼承他，DDD規則上aggregate才可以存取Repository，才可以跟另一個Aggregate Root溝通，細節可查看[Domain Model這篇](/2019-02-16-DomainModel)
+- IAggregatedRoot類一定要建立，每個Domain的Aggregate Root會繼承他，DDD規則上aggregate才可以存取Repository，才可以跟另一個Aggregate Root溝通，細節可查看[Domain Model這篇](/2019/02/16/DomainModel/)
 
 
 ### IBuyStuff.Domain.Service
