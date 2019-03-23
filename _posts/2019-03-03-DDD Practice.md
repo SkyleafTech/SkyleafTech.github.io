@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      企業及應用架構VII
+title:      企業及應用架構IX
 subtitle:   DDD Practice
 date:       2019-02-16
 author:     BY Skyleaf

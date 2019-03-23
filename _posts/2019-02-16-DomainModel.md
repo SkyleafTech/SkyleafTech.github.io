@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      企業及應用架構VII
+title:      企業及應用架構VIII
 subtitle:   Domain Model
 date:       2019-02-16
 author:     BY Skyleaf
