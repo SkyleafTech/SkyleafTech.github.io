@@ -15,7 +15,7 @@ tags:
 
 > 這篇稍微紀錄一下這次讀本書第十二跟十三篇的感想，這篇想記錄Event Sourcing，事件來源或是事件溯源
 
-![图](https://images.unsplash.com/photo-1532751788314-cf521c13ad75?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=607&q=80)
+![图](https://images.unsplash.com/photo-1532751788314-cf521c13ad75?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=407&q=80)
 
 ## Agenda
 
