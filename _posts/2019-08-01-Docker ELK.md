@@ -12,24 +12,25 @@ tags:
 ---
 # 前言
 
-> 之後會有一系列docker elk建置文章來記錄一下這正子的實作: 
-> 1. ELK stack介紹，es single node setup by docker
+> 之後會有一系列 docker elk 建置文章來記錄一下這正子的實作: 
+> 1. ES single node setup by docker
 > 2. ES multiNodes的紀錄
 > 3. 驗證的機制(certificate)的紀錄
 > 4. Docker Swarm的ELK設定
 
-![图](https://images.unsplash.com/photo-1532751788314-cf521c13ad75?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=407&q=80)
+![图](https://images.unsplash.com/photo-1564591167348-6a45f42dc223?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=100&q=80)
 
 ## Agenda
 
+- 心路歷程
 - Docker ELK
 
 # 心路歷程
 
-原本Elasticsearch就是一個蠻流行的搜尋工具，以前還是2.0版的時候使用過，當時還自建了Vue的頁面來呈現搜尋結果，當時只使用有logstash跟elasticsearch來做資料搜尋。個人覺得這個開源的產品真的很屌，速度很快，50萬筆的資料10分鐘左右就load進去了，而且每筆的查詢也是蠻快的，但資料大跟多當然會影響效能，但也是目前技術上可以接受的。在排行榜上也是名列前茅。[排名連結](https://db-engines.com/en/ranking/search+engine)。
+原本Elasticsearch就是一個蠻流行的搜尋工具，以前還是2.0版的時候使用過，當時還自建了Vue的頁面來呈現搜尋結果，當時只使用了logstash跟elasticsearch來做資料搜尋。個人覺得這個開源的產品真的很屌，速度很快，50萬筆的資料10分鐘左右就load進去了，而且每筆的查詢也是蠻快的，但資料大跟多當然會影響效能，但也是目前技術上可以接受的。在排行榜上也是名列前茅。[排名連結](https://db-engines.com/en/ranking/search+engine)。
 
 
-4年過去了，又要再次接觸ELK，但這次不像之前那樣建置了，以前是放在windows server上，安裝java，安裝很多套件，還自己硬刻了一個GUI介面。現在有x-pack了(要錢)，整合了幾乎所有的plugin套件。以前還要用Maven去安裝，現在都不用了。現在ELK的版本是7.x了，加了x-pack功能後連名稱都改成ELK Stack了，公司好像也改成elastic。不過這次要挑戰的不只是ELK stack，還要挑戰的是把它安裝在CentOS上，而且是透過Docker，自重開源這幾年瘋狂盛行，微軟也開放擁抱linux後，可以說未來不使用到Linux的機率是0，除非你想當守門員，那就比較例外了，但身為科技人一定要不斷更新，不斷學習。還記得第一次遇到linux系統困境時，是因為要架設Redis HA，當年Redis HA的資訊除了官網還真是稀少，不過現在多的跟山一樣。那時候我奇葩的使用了windows版的Redis來做實現，再丟給Infra team幫我建置，來來去去搞了一正子後才成功。後來架設RabbitMQ又遇到一次，當時我就覺得不能再逃避了，接著Docker走紅了，K8s起來了，這時候不使用command line就很遜感覺。但是以前排斥linux就是因為command line，再來是安裝VM麻煩，網路設定麻煩，本機電腦資源不足，安裝玩VM想測cluster超慢等等的問題，讓我相當挫折。當時連要copy一個檔案重linux回到本機我都不知道，問了infra也不說怎用，對處處碰壁，我只能說是你們逼我的，林北自己來學。學一套不需要開VM的不需要麻煩其他人的技術，ㄟ!!!那不就是docker。
+4年過去了，又要再次接觸ELK，但這次不像之前那樣建置了，以前是放在windows server上，安裝java，安裝很多套件，還自己硬刻了一個GUI介面。現在有x-pack了(要錢)，整合了幾乎所有的plugin套件。以前還要用Maven去安裝，現在都不用了。現在ELK的版本是7.x了，加了x-pack功能後連名稱都改成ELK Stack了，公司好像也改成elastic。不過這次要挑戰的不只是ELK stack，還要挑戰的是把它安裝在CentOS上，而且是透過Docker，自從開源這幾年瘋狂盛行，微軟也開放擁抱linux後，可以說未來不使用到Linux的機率是0，除非你想當守門員，那就比較例外了，但身為科技人一定要不斷更新，不斷學習。還記得第一次遇到linux系統困境時，是因為要架設Redis HA，當年Redis HA的資訊除了官網還真是稀少，不過現在多的跟山一樣。那時候我奇葩的使用了windows版的Redis來做實現，再丟給Infra team幫我建置，來來去去搞了一正子後才成功。後來架設RabbitMQ又遇到一次，當時我就覺得不能再逃避了，接著Docker走紅了，K8s起來了，這時候不使用command line就很遜的感覺。但是以前排斥linux就是因為command line，再來是安裝VM麻煩，網路設定麻煩，本機電腦資源不足，安裝玩VM想測cluster超慢等等的問題，讓我相當挫折。當時連要copy一個檔案從linux回到本機我都不知道怎弄，問了同事也不說怎用，吱吱嗚嗚的，對處處碰壁，我只能說是環境逼我們學習了，林北自己來學。學一套不需要開VM的不需要麻煩其他人的技術，ㄟ!!!那不就是docker。
 
 # Docker ELK 介紹
 
@@ -43,7 +44,7 @@ tags:
 4. Kibana 用來檢視，查看這些log資料的內容，還可以透過一些dashboard產出不同的表格，以利分析
 
 
-[elk single node architecture](https://i.imgur.com/K5poOPg.png)
+![elk single node architecture](https://i.imgur.com/K5poOPg.png)
 
 
 ### Filebeat
