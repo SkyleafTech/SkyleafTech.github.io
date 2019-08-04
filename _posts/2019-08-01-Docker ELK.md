@@ -81,9 +81,90 @@ tags:
 docker-compose.yml: 
         
     ```
-        稍後補上
-    ```
+        version: '3'
 
+        services:
+        elasticsearch:
+            image: elasticsearch:6.8.1
+            container_name: elasticsearch
+            environment:
+            cluster.name: 'elastic-cluster'
+            node.name: 'elasticsearch'
+            node.master: 'true'
+            node.data: 'true'
+            bootstrap.memory_lock: 'true'
+            xpack.license.self_generated.type: 'basic'
+            #Discovery
+            discovery.zen.ping_timeout: '30s'
+            discovery.zen.minimum_master_nodes: '1'
+            gateway.recover_after_data_nodes: '1'
+            thread_pool.bulk.queue_size: '3000'
+            indices.breaker.request.limit: '10%'
+            search.default_search_timeout: '30s'
+            indices.fielddata.cache.size:  '30%'
+
+            ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+            xpack.security.enabled: 'false'
+            xpack.monitoring.enabled: 'true'
+            xpack.graph.enabled: 'true'
+            xpack.watcher.enabled: 'true'
+            
+            ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+            volumes:
+            - ./esdata01:/usr/share/elasticsearch/data
+            ports:
+            - 9200:9200
+            networks:
+            - docker_elk
+        
+        logstash:
+        image: logstash:6.8.1
+        volumes:
+            - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+        ports:
+            - 5044:5044
+            - "12201:12201/udp"
+        environment:
+            http.host: '0.0.0.0'
+            pipeline.workers: '12'
+            pipeline.batch.size: '30000'
+            pipeline.batch.delay: '50'
+            config.reload.automatic: 'true'
+            config.reload.interval: '10s'
+            xpack.monitoring.enabled: 'true'
+            LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+        networks:
+            - docker_elk
+        depends_on:
+            - elasticsearch
+        
+        kibana:
+            image: kibana:6.8.1
+            environment:
+            server.host: '0.0.0.0'
+            server.name: 'kibana'
+            ELASTICSEARCH_URL: 'http://elasticsearch:9200'
+            xpack.security.enabled: 'false'
+            xpack.monitoring.enabled: 'true'
+            xpack.monitoring.kibana.collection.enabled: 'true'
+            xpack.graph.enabled: 'true'
+            xpack.reporting.enabled: 'true'
+            xpack.reporting.encryptionKey: 'EnCryptNoChangeMe'
+            xpack.reporting.kibanaServer.hostname: 'kibana'
+            ports:
+            - 5601:5601
+            networks:
+            - docker_elk
+            depends_on:
+            - elasticsearch
+
+        networks:
+        docker_elk:
+
+    ```
 
 
 
