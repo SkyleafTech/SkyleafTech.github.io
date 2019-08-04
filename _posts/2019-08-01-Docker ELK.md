@@ -18,7 +18,7 @@ tags:
 > 3. 驗證的機制(certificate)的紀錄
 > 4. Docker Swarm的ELK設定
 
-![图](https://images.unsplash.com/photo-1564591167348-6a45f42dc223?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=100&q=80)
+![图](https://images.unsplash.com/photo-1564591167348-6a45f42dc223?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80)
 
 ## Agenda
 
