@@ -2,7 +2,7 @@
 layout:     post
 title:      Docker ELK Part 3
 subtitle:   Use docker to setup ELK certificate
-date:       2019-08-08
+date:       2019-08-09
 author:     BY Skyleaf
 header-img: img/home-bg-o.jpg
 catalog: true
@@ -26,11 +26,11 @@ tags:
 
 # ELK Certificate
 
-On this post I have encountered a difficulty, "Where can I start with it", but eventually I found these two blog, funny is the one only cover es multi node ssl transport communicating, another one cover elasticsearch + logstash + kibana, but not the es multi node; therefore I decided to combine it together.
+On this post I have encountered a difficulty, "Where can I start with it", but eventually I found these two blog, funny thing is the one only cover ***es multi node ssl transport communicating***, another one cover ***single node of elasticsearch + logstash + kibana***, but not the es multi node with kibana and logstash; therefore I decided to combine it together.
 
-Here is the two sources: office [configuring-tls-docker](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/configuring-tls-docker.html)，[office elastic github](https://github.com/elastic/stack-docker/blob/master/docker-compose.yml)。
+Here is the two sources: [configuring-tls-docker](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/configuring-tls-docker.html)，[official elastic github](https://github.com/elastic/stack-docker/blob/master/docker-compose.yml)。
 
-These two example does give me a lecture of how the docker can create certificate for elasticsearch, and how to use docker compose to set it up for entire elk. Normally, we use elasticsearch-certgen tool to generate the certificate, then unzip and copy the crt and key file to our elk folder, and we need instances.yml to generate all serivces's certificates file. However, this time we want to do it in Docker. How do we gernerate certificate and also setup password to all elk service?
+These two example does give me a lecture of how the docker can create certificate for elasticsearch and how to use docker compose to set it up for entire elk with authentication. Normally, we use elasticsearch-certgen tool to generate the certificate, then unzip and copy the crt and key file to our elk folder, ( we use instances.yml to generate all serivces's certificates file at a time.). However this time we want to do it in Docker. How do we gernerate certificate and also setup password to all elk service?
 
 
 
@@ -38,20 +38,22 @@ These two example does give me a lecture of how the docker can create certificat
 
 ### First Trail:
 
-When I struggling on this question, I have discoverd the first example the [configuring-tls-docker](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/configuring-tls-docker.html)，I realized I need two steps to make it happen. Firstly, we need to run the create-certs.yml to generate the certificates, then I can run docker-compose.yml file to create es multi node service. But somehow I failed with these example, I'm confused with the password and cetificate, I tried to enter to http://127.0.0.1:9200 with the password that I put in .env file, but it does not work. Dont know why??? But I can re-generate it by the following code
+When I struggling on this question, I have discoverd the first example the [configuring-tls-docker](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/configuring-tls-docker.html)，I realized I need two steps to make it happen. Firstly, we need to run the create-certs.yml to generate the certificates, then I can run docker-compose.yml file to create es multi node service. But somehow I failed with this example, I'm confused with the password and cetificate, I tried to enter http://127.0.0.1:9200 with the password that I put in .env file, but it does not work. Dont know why??? But I can re-generate it by the following code，which will generate the elasticsearch password for me. But this is not what I want.
 
 ˋˋˋ
+
     docker exec es01 /bin/bash -c "bin/elasticsearch-setup-passwords \
     auto --batch \
     -Expack.ssl.certificate=certificates/es01/es01.crt \
     -Expack.ssl.certificate_authorities=certificates/ca/ca.crt \
     -Expack.ssl.key=certificates/es01/es01.key \
     --url https://localhost:9200"
+
 ˋˋˋ
 
 ### Second trial: 
 
-I have discoverd the second example the  [elastic/stack-docker](https://github.com/elastic/stack-docker). We need docker-compose file to do it, and find out we need to do more work then just generate certificate and make it work.
+I have discoverd the second example the  [elastic/stack-docker](https://github.com/elastic/stack-docker). We need docker-compose file and shell files to do it, and find out we need to do more work then just generate certificate and make it work.
 
 
 Firstly, we run ***docker-compose -f setup.yml up***. To trigger setup.yml and generate certificate and set ELASTIC_PASSWORD to elasticseatch service, then generate certificate files and keystores, copy the certificate files to each services. Secondly, we can run ***docker-compose up -d***, to start up the elk serivces, and try to login to http://localhost:5601 with username: elastic, password will print out on the console when you first run the setup.yml. Yes, this does works!! Thanks God.
@@ -62,7 +64,7 @@ Firstly, we run ***docker-compose -f setup.yml up***. To trigger setup.yml and g
    1. open powershell and run: $Env:COMPOSE_CONVERT_WINDOWS_PATHS=1 
    2. then at environment path add following
    3. PWD = /d/Docker/ELK/stack-docker-master 
-   4. [Imgur](https://i.imgur.com/FfVkBGp.png)
+   4. ![set Environment](https://i.imgur.com/FfVkBGp.png)
 2. create certificate files，setup keystore 
    1. docker-compose -f setup.yml up 
    2. at end output print elastic password，need to remeber it, you can change it after login to kibana  
@@ -72,6 +74,13 @@ Firstly, we run ***docker-compose -f setup.yml up***. To trigger setup.yml and g
 ## combine with multi es nodes
 
 After the [elastic/stack-docker](https://github.com/elastic/stack-docker) posted, we know how to generate certificate. In this part we will add two elasticsearhc data node in it, I add two more elasticsearch services on docker-compose file, basiclly just copy the elasticseatch service's setting, and rename the service to es02 and es03, also change the node.name, node.master, node.data, discovery.zen.ping.unicast.hosts。To enable authenticate we should add xpack.security.enabled to true. security.transport.ssl setting is for es multi node to communicate, and we need to set the xpack.ssl.* and xpack.security.http to load the certificate.
+
+![configWilCetificate](https://i.imgur.com/xqdXsiX.png)
+
+The tricky part is I have add both setup_es02 and setup_es03 services in docker compose file, and create setup-es02.sh and setup-es03.sh. These files will generate keystores and set $ELASTIC_PASSWORD. Of course you can do it in a setup-xxx.sh files. Another thing is I move environment setting for both Logstash and Kibana, because I find out the format is not right, normally we use period to seperate naming but somehow it has be underscore. Ex: elasticsearch_url instead of elasticsearch.url。 Also I set the pwd path in .env file, not in system environment's path. When I run setup_Kibana I set depend_on for not just elasticsearch also the es02 and es03 services, so these es nodes will start up and set the ELASTIC_PASSWORD before Kibana connect to it。
+
+![structure](https://i.imgur.com/FfVkBGp.png)
+
 That's check the yml files: 
 
 ˋˋˋ
@@ -368,6 +377,11 @@ That's check the yml files:
         file: ./config/kibana/kibana.crt
 
 ˋˋˋ
+
+##### Run it: 
+
+[Imgur](https://i.imgur.com/73j0tPr.png)
+
 
 
 # Conclusion
