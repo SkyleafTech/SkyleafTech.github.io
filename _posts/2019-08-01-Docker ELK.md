@@ -75,7 +75,7 @@ tags:
 - docker Engine 19.03跟Compose:1.24.1 這些都是docker一並幫你裝到好
 - ELK Stack採用6.8.1
 
-稍微註明一下docker的基礎用法我就不再這裡介紹了，linux的基礎也是，cluster等等的概內也都不再這裡講述，因為蠻多文章都有在介紹，沒必要重新蓋輪子了，有的寫得也不錯，再請同學們自行google吧，推薦可以查看[沈大大的](https://github.com/twtrubiks/docker-elk-tutorial)，再來是使用docker compose 建置ELK。通常我們會寫dockerfile來建置每個服務，但是當我們有多個服務，我們可以透過docker-compose.yml檔案把它們串在一起，寫法跟dockerfile差不多。
+稍微註明一下，docker的基礎用法我就不再這裡介紹了，linux的基礎也是，cluster等等的概念也都不再這裡講述，因為蠻多文章都有在介紹，沒必要重新蓋輪子了，有的寫得也不錯，再請同學們自行google吧，推薦可以查看[沈大大的](https://github.com/twtrubiks/docker-elk-tutorial)，再來是使用docker compose 建置ELK。通常我們會寫dockerfile來建置每個服務，但是當我們有多個服務，我們可以透過docker-compose.yml檔案把它們串在一起，寫法跟dockerfile差不多。
 
 
 docker-compose.yml: 
