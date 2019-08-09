@@ -233,13 +233,13 @@ tags:
 
 ### 5. 實測:
 
-    - docker-compose up -d 就可以啟動他了
-    - 剛開始的時候你會遇到很多狀況，會需要查看log來發現問題，可能是打錯字，可能是位置設定不對等等，可以善用這兩個工具，另外建議如果遇到狀況可以先啟elasticeasach就好，確保elasticsearch是起來的先
-    - 這邊建議大家可以先裝[portainer](https://github.com/portainer/portainer)，來查看container的狀態，跟查看log，很多人會跟你說先不要用，但是我覺得超好用，有其是查看log
-      - $ docker volume create portainer_data
-      - $ docker run -d -p 9000:9000 --name portainer --restart always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
-    - 另一個工具是[Cerebro](https://github.com/lmenezes/cerebro)，他是已前的kpof，他可以查看elasticsearch狀態，也可以直接操控elasticsearch喔，建議設密碼，不然被刪了就產了
-      - docker run -p 9000:9000 --env-file env-ldap  lmenezes/cerebro
+  - docker-compose up -d 就可以啟動他了
+  - 剛開始的時候你會遇到很多狀況，會需要查看log來發現問題，可能是打錯字，可能是位置設定不對等等，可以善用這兩個工具，另外建議如果遇到狀況可以先啟elasticeasach就好，確保elasticsearch是起來的先
+  - 這邊建議大家可以先裝[portainer](https://github.com/portainer/portainer)，來查看container的狀態，跟查看log，很多人會跟你說先不要用，但是我覺得超好用，有其是查看log
+    - $ docker volume create portainer_data
+    - $ docker run -d -p 9000:9000 --name portainer --restart always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+  - 另一個工具是[Cerebro](https://github.com/lmenezes/cerebro)，他是已前的kpof，他可以查看elasticsearch狀態，也可以直接操控elasticsearch喔，建議設密碼，不然被刪了就產了
+    - docker run -p 9000:9000 --env-file env-ldap  lmenezes/cerebro
 
 # 結論
 
