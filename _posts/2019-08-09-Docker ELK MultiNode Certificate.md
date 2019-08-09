@@ -41,6 +41,7 @@ These two example does give me a lecture of how the docker can create certificat
 When I struggling on this question, I have discoverd the first example the [configuring-tls-docker](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/configuring-tls-docker.html)，I realized I need two steps to make it happen. Firstly, we need to run the create-certs.yml to generate the certificates, then I can run docker-compose.yml file to create es multi node service. But somehow I failed with this example, I'm confused with the password and cetificate, I tried to enter http://127.0.0.1:9200 with the password that I put in .env file, but it does not work. Dont know why??? But I can re-generate it by the following code，which will generate the elasticsearch password for me. But this is not what I want.
 
 ˋˋˋ
+
     docker exec es01 /bin/bash -c "bin/elasticsearch-setup-passwords \
     auto --batch \
     -Expack.ssl.certificate=certificates/es01/es01.crt \
