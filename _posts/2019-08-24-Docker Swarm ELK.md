@@ -31,16 +31,17 @@ tags:
 這邊一定要特別講到swarm，他是一個cluster，可以分散資料到各個node，可以橫向擴展，可以提高效能，不會單點fail。
 
 
-## 實作
+## 實作步驟
 
 1. 透過docker-machine 建立三台vm
 2. 在建立之前要先修改網卡，由於是Winodws Container底層是用Hyper-v來做的
    1. 一開始先改Hyper-v的"虛擬交換器管理員"設定IP4網址的轉換，官網也有講到如何更改 
-   2. ![hypernet-ip](https://i.imgur.com/q6rZIox.png)
+   2. ![hypernet-ip](https://i.imgur.com/VOXXGqp.png)
 3. 建立vm
    1. docker-machine create -d hyperv --hyperv-virtual-switch "Primary Virtual Switch" vm1 
-   2. ![manager-node](https://i.imgur.com/Mc8eyHv.png)
-   3. 查看語法: docker-machine ls
+   2. 查看語法: docker-machine ls  
+   3. ![manager-node](https://i.imgur.com/Mc8eyHv.png)
+   
 4. 進入vm1 啟動swarm，取得master Token
    1. docker-machine ssh vm1 
    2. docker swarm init --advertise-addr 172.16.49.203 
@@ -50,7 +51,7 @@ tags:
    2. docker swarm join --token SWMTKN-1-3d81wqmfk0dp1drzk3fv1ozs5bm4049yu8k20dofqlin73pyhh-2dk12n91pyodwgu02fof5ktd1 172.16.49.203:2377 
 6. 檢查目前cluster node
    1. docker node ls
-   2. ![node]https://i.imgur.com/OtKyuCk.png)
+   2. ![node](https://i.imgur.com/OtKyuCk.png)
 
 7. 每台vm都記得開啟max_map_count上限給262144
    - sudo sysctl -w vm.max_map_count=262144 
@@ -58,10 +59,10 @@ tags:
 9.  複製docker-compose.yml到vm01上
     1. 可以透過ssh工具，也可以透過docker語法
     2. 使用ssh進入vm1的話，由於hyper-v 使用的VM是boot2docker，SSH的default是帳密是docker/tcuser，[boot2docker](https://github.com/boot2docker/boot2docker/blob/master/README.md)也有註明
-    3. 使用docker語法的話，Docker-machine scp，[scp](https://docs.docker.com/machine/reference/scp/) 
+    3. 使用docker語法的話，Docker-machine scp，[scp官方連結](https://docs.docker.com/machine/reference/scp/) 
        - docker-machine scp docker-compose.yml myvm1:~ 
 10. 透過stack執行部屬 docker-compose-xxxx.yml
-    1.  docker stack deploy -c docker-stack.yml elk 
+    1.  docker stack deploy -c docker-stack.yml elk 或是
     2.  docker stack deploy --compose-file docker-compose-cluster.yml elk 
     3.  ![dockerSwarm](https://i.imgur.com/k9lU2q4.png)
 11. 查看node的腳色，先透過docker node ls抓出node的Id 
@@ -75,7 +76,8 @@ tags:
     5.  ![checkKibana](https://i.imgur.com/X5DjQk3.png)
 13. 透過Deploy語法指定ELK Service的部屬
     -  放在這Github
-14. 最終部屬架構
+14. 最終部屬架構 
+    - 2台elasticsearch，2台logstash，3台logspout，1台kibana，1台visualizer 
     - ![swarmelk](https://i.imgur.com/dKVo3bg.png)
 15. 移除語法
     -  docker stack rm elk
@@ -105,7 +107,7 @@ tags:
 
 # Consulsion
 
-最後終於結束這四篇的安裝，歡迎大家可以嘗試嘗試。有些東西不試就不會知道當中的眉眉角角。這部前應該是可以直接使用的，如果要Production還要依據參數做一點修改，另外可以安裝Nginx跟Curator。一個是反向代理，一個是定時刪除es indies。差不多就這樣，最近公司系統好像出狀況了，該回歸正途了，感謝觀看。
+最後終於結束這四篇的安裝，歡迎大家可以嘗試嘗試。有些東西不試就不會知道當中的眉眉角角。這目前應該是可以直接使用的，如果要Production還要依據參數做一點修改，另外可以安裝Nginx跟Curator。一個是反向代理，一個是定時刪除es indies。差不多就這樣，最近系統好像出狀況了，該回歸正途了，感謝觀看。
 
 
 

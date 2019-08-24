@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      企業及應用架構XI
-subtitle:   CQRS
+subtitle:   CQRS Practice
 date:       2019-03-31
 author:     BY Skyleaf
 header-img: img/post-bg-kuaidi.jpg
