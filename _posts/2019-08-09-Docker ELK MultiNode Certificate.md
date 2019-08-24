@@ -388,7 +388,7 @@ That's check the yml files:
 
 # Conclusion
 
-I am still trying to find out all the settings that can really affect the elasticsearch, but some of the setting are still testing. You are welcome to give any idea or setting that is better suit for ELK certificate, and this is running example of ELK multi node Certificate example. Give a try!!
+I am still trying to find out all the settings that can really affect the elasticsearch, but some of the setting are still testing. You are welcome to give any idea or setting that is better suit for ELK certificate, and this is running example of ELK multi node Certificate example. Give it a try!!
 
 
 
